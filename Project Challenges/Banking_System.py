@@ -37,9 +37,6 @@ def update_bank_extract(insert_values_bank_extract: float, string_to_identify_wh
         return f"Deposit: $ {insert_values_bank_extract:.2f}\n"
     else:
         return f"Withdrawal: $ {insert_values_bank_extract:.2f}\n"
-
-def print_bank_extract(ends_with_that_money: float):
-    print(f"Balance: $ {ends_with_that_money:.2f} into your Bank account.")
         
 while(control):
     choose_transaction = define_transaction(format_string(menu()))
