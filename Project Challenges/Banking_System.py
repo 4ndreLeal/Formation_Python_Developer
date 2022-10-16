@@ -1,94 +1,91 @@
-current_amount_into_bank_account = float(input("How much money do you have into your Bank account? $ "))
-current_amount_deposited = 0
-current_amount_withdrawn = 0
-bank_extract_dictionary = {
-    "Amount deposited": 0,
-    "Amount withdrawn": 0,
-}
+current_balance_bank_account = 0
+current_amount = 0
+limit_amount_withdrawn = 500
+number_withdrawal = 0
+bank_extract = ""
 WITHDRAWAL_LIMIT = 3
-current_number_withdrawals = 0
 control = True
 
-menu = """
-*                             *
-*   [d] Deposit               *
-*   [w] Withdrawal            *
-*   [e] Bank extract          *
-*   [l] End banking process   *
-*                             *
-"""
-
-menu_exception = """
-*                             *
-*   [d] Deposit               *
-*   [e] Bank extract          *
-*   [l] End banking process   *
-*                             *
+def menu():
+    return """
+☆                          ☆
+☆   [d] DEPOSIT            ☆
+☆   [w] WITHDRAWAL         ☆
+☆   [e] BANK EXTRACT       ☆
+☆   [q] END BANK PROCESS   ☆
+☆                          ☆
 """
 
 def format_string(string_menu: str):
-    return "\n" + string_menu.center(len(string_menu) + 62, "*") + "\n"
+    return "\n" + string_menu.center(len(string_menu) + 56, "=") + "\n"
 
 def define_transaction(show_menu: str):
     print(show_menu)
-    option = input("Financial operation: ")
+    option = input("Financial operation:\n=> ")
     return option
 
 def execute_transaction_deposit():
-    get_amount_deposit = -1
-    while get_amount_deposit <= 0:
-        get_amount_deposit = float(input("Amount to be deposited: $ "))
+    get_amount_deposit = float(input("Amount to be deposited: $ "))
     return get_amount_deposit
     
-def execute_transaction_withdrawal(amount_to_check_available_of_transaction: float):
-    get_amount_withdrawal = -1
-    counter = 0
-    while get_amount_withdrawal <= 0 or get_amount_withdrawal > 500 or get_amount_withdrawal > amount_to_check_available_of_transaction:
-        counter += 1
-        if counter > 1:
-            print("Choose an available option!")
-        get_amount_withdrawal = float(input("Amount to be withdrawn: $ "))
+def execute_transaction_withdrawal():
+    get_amount_withdrawal = float(input("Amount to be withdrawn: $ "))
     return get_amount_withdrawal
 
-def update_bank_extract(update_values_into_bank_extract_dictionary: dict, values_to_insert_into_bank_extract_dictionary: float, string_to_identify_which_transaction: str):
+def update_bank_extract(insert_values_bank_extract: float, string_to_identify_which_transaction: str):
     if string_to_identify_which_transaction == "d":
-        update_values_into_bank_extract_dictionary["Amount deposited"] = values_to_insert_into_bank_extract_dictionary
-        return update_values_into_bank_extract_dictionary
+        return f"Deposit: $ {insert_values_bank_extract:.2f}\n"
     else:
-        update_values_into_bank_extract_dictionary["Amount withdrawn"] = values_to_insert_into_bank_extract_dictionary
-        return update_values_into_bank_extract_dictionary
+        return f"Withdrawal: $ {insert_values_bank_extract:.2f}\n"
 
-def print_bank_extract(dictionary_of_transactions: dict, ends_with_that_money: float):
-    for key, value in dictionary_of_transactions.items():
-        print(f"{key} = R$ {value:.2f}")
-    if ends_with_that_money > 0:
-        print(f"You still have $ {ends_with_that_money:.2f}")
-    else:
-        print(f"You have no money at this point.")
+def print_bank_extract(ends_with_that_money: float):
+    print(f"Balance: $ {ends_with_that_money:.2f} into your Bank account.")
         
 while(control):
-    choose_transaction = define_transaction(format_string(menu))
+    choose_transaction = define_transaction(format_string(menu()))
     match choose_transaction:
         case "d":
-            get_return_of_transaction_deposit = execute_transaction_deposit()
-            current_amount_deposited += get_return_of_transaction_deposit
-            current_amount_into_bank_account += get_return_of_transaction_deposit
-            bank_extract_dictionary = update_bank_extract(bank_extract_dictionary, current_amount_deposited, "d")
-        case "w":
-            if WITHDRAWAL_LIMIT == current_number_withdrawals:
-                print("You can't do another withdrawal transaction!")
-                continue
+            current_amount = execute_transaction_deposit()
+            if current_amount > 0:
+                current_balance_bank_account += current_amount
+                bank_extract += update_bank_extract(current_amount, "d")
             else:
-                get_return_of_transaction_withdrawal = execute_transaction_withdrawal(current_amount_into_bank_account)
-                current_amount_withdrawn += get_return_of_transaction_withdrawal
-                current_amount_into_bank_account -= get_return_of_transaction_withdrawal
-                current_number_withdrawals += 1
-                bank_extract_dictionary = update_bank_extract(bank_extract_dictionary, current_amount_withdrawn, "w")
+                print("_" * 26)
+                print("|Invalid amount detected.|")
+                print("-" * 26)
+        case "w":
+            current_amount = execute_transaction_withdrawal()
+            balance_exceeded = current_amount > current_balance_bank_account
+            limit_exceeded = current_amount > limit_amount_withdrawn
+            withdrawal_exceeded = WITHDRAWAL_LIMIT <= number_withdrawal
+            if balance_exceeded:
+                print("_" * 77)
+                print("|Transaction failed. You don't have enough balance to make this transaction.|")
+                print("-" * 77)
+            elif limit_exceeded:
+                print("_" * 75)
+                print("|Transaction failed. The amount requested to withdrawal exceeds the limit.|")
+                print("-" * 75)
+            elif withdrawal_exceeded:
+                print("_" * 65)
+                print("|Transaction failed. You exceeded the daily limit of withdrawal.|")
+                print("-" * 65)
+            elif current_amount > 0:
+                current_balance_bank_account -= current_amount
+                bank_extract += update_bank_extract(current_amount, "w")
+                number_withdrawal += 1
+            else:
+                print("_" * 26)
+                print("|Invalid amount detected.|")
+                print("-" * 26)
+
         case "e":
-            print_bank_extract(bank_extract_dictionary, current_amount_into_bank_account)
-        case "l":
-            print_bank_extract(bank_extract_dictionary, current_amount_into_bank_account)
+            print("\n" + " EXTRACT ".center(40, "~"))
+            print("You haven't made transactions." if not bank_extract else bank_extract)
+            print(f"\nCurrent balance: $ {current_balance_bank_account:.2f}")
+            print("=" * 40)
+        case "q":
+            print(f'You have closed your transactions with $ {current_balance_bank_account:.2f}.')
             control = not control
         case _:
-            print("Choose an available option!")
-            continue
+            print(f"{choose_transaction} is an invalid operation. Try again.")
